@@ -1,0 +1,48 @@
+{
+  "name": "ritation-scraper-bot",
+  "version": "1.0.0",
+  "author": "Septian Nuriyanto",
+  "main": "main.js",
+  "build": {
+    "appId": "com.ritation.bot",
+    "productName": "Ritation Bot",
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "preload.js",
+      "renderer.html",
+      "icon.ico"
+    ],
+    "extraResources": [
+      "nircmd.exe"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "directories": {
+      "buildResources": "."
+    }
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "@whiskeysockets/baileys": "^6.17.16",
+    "axios": "^1.8.4",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "qrcode-terminal": "^0.12.0"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.1",
+    "@types/qrcode-terminal": "^0.12.2",
+    "electron": "^35.1.4",
+    "electron-builder": "^26.0.12"
+  },
+  
+  "scripts": {
+    "start": "electron main.js",
+    "build": "tsc",
+    "dist": "electron-builder"
+  }
+}

@@ -1,0 +1,29 @@
+# Node.js
+node_modules/
+dist/
+build/
+
+
+#auth
+auth/
+
+# Environment
+.env
+*.env
+.env.local
+
+# Group Whitelist (custom config)
+src/group-whitelist.ts
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# git
+*.gitattributes
+*.gitignore
