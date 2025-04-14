@@ -31,7 +31,7 @@ app.post('/webhook', async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    await handleMessage(messageText, timestamp);
+    await handleMessage(messageText, timestamp, null);
     res.status(200).json({ message: 'Message processed successfully.' });
   } catch (err) {
     console.error('❌ Failed to process message:', err);

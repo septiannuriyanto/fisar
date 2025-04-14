@@ -1,7 +1,7 @@
 // src/supabase.ts
 import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
-import { RitasiEntry } from './parser';
+import { RitasiEntry } from './parsers/groupSupplyParser';
 
 dotenv.config();
 
@@ -14,7 +14,7 @@ export async function insertRitasi(entries: RitasiEntry[], reportDate: string) {
     .from('ritasi_daily_reconcile') // Ganti sesuai nama tabel kamu
     .insert(
       entries.map(entry => ({
-        do_number : null,
+        do_number : entry.noDo,
         unit_id: entry.unit,
         qty: entry.volume,
         report_date: reportDate,

@@ -46,7 +46,7 @@ export const startWhatsAppBot = async () => {
   
     // ✅ Cek kalau bukan grup atau tidak ada di whitelist
     if (!remoteJid?.endsWith('@g.us') || !allowedGroups.includes(remoteJid)) {
-      console.log(`⛔ Grup tidak di-whitelist: ${remoteJid}`);
+      // console.log(`⛔ Grup tidak di-whitelist: ${remoteJid}`);
       return;
     }
   
@@ -62,11 +62,11 @@ export const startWhatsAppBot = async () => {
       console.log('⛔ Bot is outside of shift hours');
       return;
     }
-  
-    console.log(`💬 New message from ${remoteJid}:`, messageText);
+    console.log(remoteJid);
+    console.log(messageText);
   
     try {
-      await handleMessage(messageText, timestamp);
+      await handleMessage(messageText, timestamp,remoteJid);
     } catch (err) {
       console.error('❌ Error handling message:', err);
     }
