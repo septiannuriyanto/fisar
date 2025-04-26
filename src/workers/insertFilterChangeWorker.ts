@@ -1,11 +1,11 @@
-// src/workers/insertWorker.ts
+// src/workers/insertFilterChangeWorker.ts
 import { parentPort, workerData } from 'worker_threads';
-import { insertRitasiWithRetry } from '../services/ritasi/ritasiRecordService';
+import { insertFilterChangeWithRetry } from '../services/filterChange/filterChangeServices';
 
 (async () => {
   try {
-    const { entries, reportDate } = workerData;
-    const result = await insertRitasiWithRetry(entries, reportDate);
+    const { entry } = workerData;
+    const result = await insertFilterChangeWithRetry(entry);
     parentPort?.postMessage({ success: true, data: result });
   } catch (error: any) {
     parentPort?.postMessage({ success: false, error: error.message });

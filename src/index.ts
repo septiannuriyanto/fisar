@@ -3,7 +3,7 @@
 import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { handleMessage } from './handlers/messageHandler';
-import { isWithinShift } from './scheduler';
+import { isWithinShift, startCronJobs } from './scheduler';
 
 dotenv.config();
 
@@ -56,3 +56,4 @@ app.listen(PORT, () => {
 import { startWhatsAppBot } from './whatsapp';
 
 startWhatsAppBot();
+startCronJobs();

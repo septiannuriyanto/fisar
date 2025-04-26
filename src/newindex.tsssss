@@ -1,0 +1,105 @@
+// src/index.ts
+import express, { Request, Response } from 'express';
+import dotenv from 'dotenv';
+import { handleMessage } from './handlers/messageHandler';
+import { isWithinShift, startCronJobs } from './scheduler';
+import { whatsapp } from './class/whatsapp-client';
+import logger from './utils/logger';
+import { startHealthCheck } from './healthCheck';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware untuk logging request
+app.use((req, _, next) => {
+  logger.info(`${req.method} ${req.path}`);
+  next();
+});
+
+// Middleware untuk parsing JSON
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Health check endpoint
+app.get('/health', (req: Request, res: Response) => {
+  const status = {
+    status: 'OK',
+    timestamp: Date.now(),
+    whatsappConnected: whatsapp.isConnected(),
+    uptime: process.uptime(),
+  };
+  res.status(200).json(status);
+});
+
+// Webhook endpoint
+app.post('/webhook', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { message, timestamp = Date.now() } = req.body;
+
+    if (!message) {
+      res.status(400).json({ error: 'No message provided' });
+      return;
+    }
+
+    if (!isWithinShift()) {
+      logger.warn('⛔ Bot is outside of shift hours');
+      res.status(200).json({ message: 'Bot inactive during this time' });
+      return;
+    }
+
+    await handleMessage(message, timestamp, null);
+    res.status(200).json({ message: 'Message processed successfully' });
+  } catch (err) {
+    logger.error('❌ Failed to process message:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Error handling middleware
+app.use((err: Error, req: Request, res: Response, _: Function) => {
+  logger.error(`Error in ${req.method} ${req.path}:`, err);
+  res.status(500).json({ error: 'Something went wrong' });
+});
+
+async function startServer() {
+  try {
+    // Start WhatsApp connection
+    await whatsapp.initialize({
+      printQR: process.env.NODE_ENV !== 'production',
+      logger: { level: process.env.NODE_ENV === 'development' ? 'debug' : 'warn' }
+    });
+
+    // Start cron jobs
+    startCronJobs();
+
+    // Start health check monitoring
+    startHealthCheck();
+
+    // Start Express server
+    app.listen(PORT, () => {
+      logger.info(`🚀 Server running on http://localhost:${PORT}`);
+      logger.info(`🕒 Current shift status: ${isWithinShift() ? 'Active' : 'Inactive'}`);
+      logger.info(`🤖 WhatsApp status: ${whatsapp.isConnected() ? 'Connected' : 'Disconnected'}`);
+    });
+
+  } catch (error) {
+    logger.error('Failed to start application:', error);
+    process.exit(1);
+  }
+}
+
+// Start the application
+startServer();
+
+// Handle graceful shutdown
+process.on('SIGINT', () => {
+  logger.info('🛑 Received SIGINT. Shutting down gracefully...');
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  logger.info('🛑 Received SIGTERM. Shutting down gracefully...');
+  process.exit(0);
+});

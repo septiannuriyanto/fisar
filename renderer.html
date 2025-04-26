@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Ritation</title>
+  <title>Fuel Intelligent Scraping and Automated Reporting</title>
   <style>
     body {
       font-family: monospace;
@@ -40,14 +40,22 @@
   </style>
 </head>
 <body>
-  <h1>Ritation</h1>
+  <h1>FISAR Bot at your service....</h1>
   <div id="controls">
     <button id="toggleBtn">Start Bot</button>
+    <button id="downloadSohBtn">Download 17RA</button>
+    <button id="downloadPoBtn">Download 221</button>
+    <button id="checkSummaryPoBtn">Check <Summary></Summary> PO</button>
+    <button id="sendTestMessageBtn">Send Test Message</button>
   </div>
   <div id="log"></div>
 
   <script>
     const toggleBtn = document.getElementById('toggleBtn');
+    const downloadSohBtn = document.getElementById('downloadSohBtn');
+    const downloadPoBtn = document.getElementById('downloadPoBtn');
+    const checkSummaryPoBtn = document.getElementById('checkSummaryPoBtn');
+    const sendTestMessageBtn = document.getElementById('sendTestMessageBtn');
     const logContainer = document.getElementById('log');
 
     let isRunning = false;
@@ -56,6 +64,19 @@
       isRunning = !isRunning;
       toggleBtn.textContent = isRunning ? 'Stop Bot' : 'Start Bot';
       window.electronAPI.toggleBot(isRunning);
+    });
+
+    downloadSohBtn.addEventListener('click', () => {
+      window.electronAPI.downloadSoh();
+    });
+    downloadPoBtn.addEventListener('click', () => {
+      window.electronAPI.downloadPo();
+    });
+    sendTestMessageBtn.addEventListener('click', () => {
+      window.electronAPI.sendTestMessage();
+    });
+    checkSummaryPoBtn.addEventListener('click', () => {
+      window.electronAPI.checkSummaryPo();
     });
 
     window.electronAPI.onLog((log) => {
