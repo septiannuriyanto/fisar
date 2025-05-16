@@ -1,4 +1,5 @@
-import { formatTanggalHariIni } from "../functions";
+import { format } from "path";
+import { formatDateForSupabase, formatTanggalHariIni, formatTanggalHariIniDdMmYy } from "../functions";
 import { DataSOH, whitelist } from "../types/datasoh";
 import * as XLSX from 'xlsx';
 
@@ -17,7 +18,7 @@ export const readExcelAndFilter17RA = (path: string) => {
     const wh_code = (row[2] || '').toString().trim().toUpperCase();
     const stock_code = Number(row[4]) || 0;
     const qty = Number(row[11]) || 0;
-    const tgl = formatTanggalHariIni();
+    const tgl = formatDateForSupabase(formatTanggalHariIniDdMmYy()) || '';
 
     const id = `${yyMMdd}${wh_code}${stock_code}`;
 

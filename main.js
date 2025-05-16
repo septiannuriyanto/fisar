@@ -5,6 +5,7 @@ const { downloadFileFromFtp } = require('./dist/utils/ftpClient'); // Import dow
 const { copy17Ra, copy221 } = require('./dist/utils/fileClient'); // Import download function
 const { sendFilterUsageReminder } = require('./dist/reminders/grupGLFaoReminder'); // Import download function
 const { checkAndNotifyPoFuelSummaryTest } = require('./dist/jobs/checkAndNotifyPoFuelSummary'); // Import download function
+const { start } = require('repl');
 
 let tray = null;
 let mainWindow = null;
@@ -67,7 +68,7 @@ function stopBot() {
 
 function createTray() {
   tray = new Tray(path.join(__dirname, 'icon.ico'));
-  tray.setToolTip('Ritasi Bot');
+  tray.setToolTip('ARLIDA BOT');
 
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -160,6 +161,7 @@ ipcMain.on('send-testmessage', async() => {
 app.whenReady().then(() => {
   createWindow();
   createTray();
+  startBot();
 });
 
 app.on('window-all-closed', (e) => {

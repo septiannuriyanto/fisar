@@ -115,6 +115,16 @@ export function startCronJobs() {
       console.error('❌ Error in updating PO Fuel Summary:', err);
     }
   });
+  // 🔁 Cron untuk update summary PO Fuel
+  cron.schedule('37 14 * * *', async () => {
+    console.log('🛠️ Cron Update PO Fuel Summary running [every 13:01] daily...');
+    try {
+      await checkAndNotifyPoFuelSummaryToday()
+      console.log(`✅ Update PO Fuel Summary completed at [${new Date().toLocaleString()}]`);
+    } catch (err) {
+      console.error('❌ Error in updating PO Fuel Summary:', err);
+    }
+  });
 
   // ⚙️ TEST: Cek filter setiap 1 menit
   // cron.schedule('* * * * *', async () => {
