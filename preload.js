@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   toggleBot: (status) => ipcRenderer.send('toggle-bot', status),
+  coldRestart: () => ipcRenderer.send('cold-restart'),
   downloadSoh: () => ipcRenderer.send('download-soh'), // ✅ harus ada ini
   downloadPo: () => ipcRenderer.send('download-po'), // ✅ harus ada ini
   checkSummaryPo: () => ipcRenderer.send('checksummary-po'), // ✅ harus ada ini

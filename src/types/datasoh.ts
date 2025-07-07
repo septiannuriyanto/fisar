@@ -11,4 +11,4 @@ export interface DataSOH {
   
 
 // Whitelist stock_code
-export const whitelist = [5517, 125328, 3502, 3583, 494831]; // Ganti sesuai kebutuhan
+export const whitelist = [5517]; // Ganti sesuai kebutuhan

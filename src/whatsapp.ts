@@ -13,6 +13,10 @@ import { GROUP_LIST, GROUP_WHITELIST } from './group-whitelist';
 import { isWithinShift } from './scheduler';
 import store from './store';
 import { getSockInstance, setSockInstance } from './class/whatsapp-socket';
+import pino from 'pino';
+import path from 'path';
+import QRCode from 'qrcode';
+import { sendQRViaMailjet } from './utils/mailJet';
 
 let sockInstance: WASocket | null = null;
 
@@ -24,10 +28,13 @@ export const createSockInstance = async (): Promise<WASocket> => {
   const { state, saveCreds } = await useMultiFileAuthState('auth');
   const { version } = await fetchLatestBaileysVersion();
 
+  const logger = pino({ level: 'silent' });
+
   const sock = makeWASocket({
     version,
     auth: state,
     printQRInTerminal: true,
+    logger,
   });
 
   // Menyimpan kredensial ketika terjadi perubahan
@@ -46,39 +53,84 @@ const initializeSock = async (): Promise<WASocket> => {
 
   const sock = await createSockInstance();
 
-  sock.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
-    if (qr) {
-      qrcode.generate(qr, { small: true });
-      console.log('🔑 Scan QR di atas untuk login...');
-    }
+let lastSentQR: string | null = null;
+
+sock.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
+  if (qr) {
+    // Cegah ngirim QR yang sama berkali-kali
+    if (qr === lastSentQR) return;
+
+    lastSentQR = qr; // Tandai QR terakhir yang sudah dikirim
+
+    qrcode.generate(qr, { small: true });
+    console.log('🔑 Scan QR di atas untuk login...');
+
+    // const filePath = path.join(__dirname, "qrcode.png");
+    // QRCode.toFile(filePath, qr, {}, (err: any) => {
+    //   if (err) return console.error(err);
+    //   sendQRViaMailjet(filePath);
+    // });
+  }
+
 
     if (connection === 'close') {
-      const shouldReconnect =
-        (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
-      console.log('❌ Connection closed. Reconnecting...', shouldReconnect);
-      if (shouldReconnect) {
-        sockInstance = null; // Reset sockInstance untuk rekoneksi
-        await startWhatsAppBot();
-      }
-    } else if (connection === 'open') {
+  const error = lastDisconnect?.error as Boom;
+
+  const statusCode = error?.output?.statusCode;
+  const reasonMessage = error?.output?.payload?.message || error?.message || 'Unknown reason';
+
+  console.log('❌ Connection closed.');
+  console.log('📴 Disconnect reason status code:', statusCode);
+  console.log('📝 Message:', reasonMessage); // <== tampilkan pesan error aslinya
+
+  // Gunakan switch seperti sebelumnya
+  switch (statusCode) {
+    case DisconnectReason.badSession:
+      console.log('🚫 Bad Session File. Delete session and scan again.');
+      break;
+    case DisconnectReason.connectionClosed:
+      console.log('📴 Connection closed, reconnecting...');
+      break;
+    case DisconnectReason.connectionLost:
+      console.log('📡 Connection lost from server, reconnecting...');
+      break;
+    case DisconnectReason.connectionReplaced:
+      console.log('🔄 Connection replaced. Another device logged in.');
+      break;
+    case DisconnectReason.loggedOut:
+      console.log('🔐 Logged out. Scan QR again.');
+      break;
+    case DisconnectReason.restartRequired:
+      console.log('🔁 Restart required. Reconnecting...');
+      break;
+    case DisconnectReason.timedOut:
+      console.log('⏱️ Connection timed out. Reconnecting...');
+      break;
+    default:
+      console.log('❓ Unknown disconnect status. Will still attempt reconnect.');
+  }
+
+  const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+
+  if (shouldReconnect) {
+    sockInstance = null;
+    await startWhatsAppBot();
+  }
+}
+ else if (connection === 'open') {
       // Emit event bahwa koneksi terbuka
       console.log('✅ WhatsApp terhubung.');
       eventEmitter.emit('sockReady', true);  // Memastikan event dipicu
       setSockInstance(sock); 
-      const lsock = await waitUntilSockInRedux();
-
-          if (lsock) {
-            await lsock.sendMessage(GROUP_LIST.TEST, { text: 'Sudah konek bwaaangg' });
-          } else {
-            console.warn('Sock belum masuk Redux');
-          }
-
+    console.log('✅ WhatsApp connected.');
+    lastSentQR = null;
     }
   });
 
   sock.ev.on('messages.upsert', async ({ messages }) => {
     const msg = messages[0];
-    if (!msg.message || msg.key.fromMe) return;
+    // if (!msg.message || msg.key.fromMe) return;
+    if (!msg.message) return;
 
     const remoteJid = msg.key.remoteJid;
     const allowedGroups = Object.values(GROUP_WHITELIST);
@@ -118,27 +170,6 @@ export const startWhatsAppBot = async (): Promise<void> => {
   // console.log('[DISPATCH] Done.');
 };
 
-const waitUntilSockInRedux = async (timeoutMs = 5000): Promise<WASocket | null> => {
-  const intervalMs = 100;
-  const maxTries = timeoutMs / intervalMs;
-  let tries = 0;
-
-  return new Promise((resolve) => {
-    const interval = setInterval(() => {
-      const state = store.getState();
-      const sock = state.whatsapp.sock;
-
-      if (sock) {
-        clearInterval(interval);
-        resolve(sock);
-      } else if (++tries >= maxTries) {
-        clearInterval(interval);
-        console.warn('Timeout waiting for sock in Redux');
-        resolve(null);
-      }
-    }, intervalMs);
-  });
-};
 
 
 // Menunggu hingga WhatsApp terhubung sebelum melanjutkan.

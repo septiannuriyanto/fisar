@@ -43,6 +43,7 @@
   <h1>FISAR Bot at your service....</h1>
   <div id="controls">
     <button id="toggleBtn">Start Bot</button>
+    <button id="coldRestart">Bot Cold Restart</button>
     <button id="downloadSohBtn">Download 17RA</button>
     <button id="downloadPoBtn">Download 221</button>
     <button id="checkSummaryPoBtn">Check <Summary></Summary> PO</button>
@@ -52,6 +53,7 @@
 
   <script>
     const toggleBtn = document.getElementById('toggleBtn');
+    const coldRestartBtn = document.getElementById('coldRestart');
     const downloadSohBtn = document.getElementById('downloadSohBtn');
     const downloadPoBtn = document.getElementById('downloadPoBtn');
     const checkSummaryPoBtn = document.getElementById('checkSummaryPoBtn');
@@ -64,6 +66,12 @@
       isRunning = !isRunning;
       toggleBtn.textContent = isRunning ? 'Stop Bot' : 'Start Bot';
       window.electronAPI.toggleBot(isRunning);
+    });
+
+    coldRestartBtn.addEventListener('click', () => {
+      isRunning = !isRunning;
+      toggleBtn.textContent = isRunning ? 'Stop Bot' : 'Start Bot';
+      window.electronAPI.coldRestart();
     });
 
     downloadSohBtn.addEventListener('click', () => {

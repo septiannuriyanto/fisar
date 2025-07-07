@@ -44,6 +44,18 @@ app.listen(PORT, () => {
 });
 
 
+async function cacheTeraTangkiFromCSV() {
+  try {
+    await loadTeraCacheFromCSV('./assets/tera_tangki.csv');
+    console.log('✅ Tera cache ready. Starting server...');
+
+    // Lanjut start server, bot, listener, dll
+  } catch (err) {
+    console.error('❌ Failed during startup:', err);
+    process.exit(1);
+  }
+}
+
 
 // import { startBaileys } from './baileysClient';
 
@@ -54,6 +66,13 @@ app.listen(PORT, () => {
 // });
 
 import { startWhatsAppBot } from './whatsapp';
+import { loadTeraCacheFromCSV } from './utils/teraCache';
+
 
 startWhatsAppBot();
 startCronJobs();
+cacheTeraTangkiFromCSV().then(() => {
+  console.log('✅ Tera cache loaded and server started');
+}).catch((err) => {
+  console.error('❌ Error starting server:', err);
+});
