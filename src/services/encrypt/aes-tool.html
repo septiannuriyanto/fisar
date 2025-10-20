@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AES Encrypt/Decrypt</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; max-width: 700px; margin: auto; }
+    textarea, input { width: 100%; margin-bottom: 1rem; font-family: monospace; padding: 8px; }
+    button { margin-right: 1rem; padding: 8px 16px; }
+  </style>
+</head>
+<body>
+  <h2>AES Encrypt/Decrypt Tool with Key Generator</h2>
+
+  <label>Secret Key:</label><br>
+  <input type="text" id="key" placeholder="Your secret key..." />
+  <button onclick="generateKey()">Generate Secret Key</button><br>
+
+  <label>Plain Text:</label><br>
+  <textarea id="plainText" placeholder="Enter text to encrypt..."></textarea><br>
+
+  <button onclick="encrypt()">Encrypt</button>
+  <button onclick="decrypt()">Decrypt</button><br>
+
+  <label>Encrypted (Base64):</label><br>
+  <textarea id="encrypted" readonly></textarea><br>
+
+  <label>Decrypted Text:</label><br>
+  <textarea id="decrypted" readonly></textarea><br>
+
+  <script>
+    function generateKey(length = 32) {
+      const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
+      let result = "";
+      const array = new Uint32Array(length);
+      crypto.getRandomValues(array);
+      for (let i = 0; i < length; i++) {
+        result += charset[array[i] % charset.length];
+      }
+      document.getElementById("key").value = result;
+    }
+
+    function encrypt() {
+      const key = document.getElementById("key").value;
+      const text = document.getElementById("plainText").value;
+      if (!key || !text) return alert("Please fill in both key and text.");
+      const ciphertext = CryptoJS.AES.encrypt(text, key).toString();
+      document.getElementById("encrypted").value = ciphertext;
+    }
+
+    function decrypt() {
+      const key = document.getElementById("key").value;
+      const encrypted = document.getElementById("encrypted").value;
+      if (!key || !encrypted) return alert("Please fill in both key and encrypted text.");
+      const bytes = CryptoJS.AES.decrypt(encrypted, key);
+      const originalText = bytes.toString(CryptoJS.enc.Utf8);
+      document.getElementById("decrypted").value = originalText || '[Decryption failed]';
+    }
+  </script>
+</body>
+</html>

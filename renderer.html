@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Fuel Intelligent Scraping and Automated Reporting</title>
+  <style>
+    body {
+      font-family: monospace;
+      margin: 0;
+      padding: 10px;
+      background: #1e1e1e;
+      color: #00ff88;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      color: #fff;
+    }
+
+    #controls {
+      margin-bottom: 10px;
+    }
+
+    #log {
+      flex: 1;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      background: #000;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 6px 14px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>FISAR Bot at your service....</h1>
+  <div id="controls">
+    <button id="toggleBtn">Start Bot</button>
+    <button id="coldRestart">Bot Cold Restart</button>
+    <button id="downloadSohBtn">Download 17RA</button>
+    <button id="downloadPoBtn">Download 221</button>
+    <button id="checkSummaryPoBtn">Check <Summary></Summary> PO</button>
+    <button id="sendTestMessageBtn">Send Test Message</button>
+  </div>
+  <div id="log"></div>
+
+  <script>
+    const toggleBtn = document.getElementById('toggleBtn');
+    const coldRestartBtn = document.getElementById('coldRestart');
+    const downloadSohBtn = document.getElementById('downloadSohBtn');
+    const downloadPoBtn = document.getElementById('downloadPoBtn');
+    const checkSummaryPoBtn = document.getElementById('checkSummaryPoBtn');
+    const sendTestMessageBtn = document.getElementById('sendTestMessageBtn');
+    const logContainer = document.getElementById('log');
+
+    let isRunning = false;
+
+    toggleBtn.addEventListener('click', () => {
+      isRunning = !isRunning;
+      toggleBtn.textContent = isRunning ? 'Stop Bot' : 'Start Bot';
+      window.electronAPI.toggleBot(isRunning);
+    });
+
+    coldRestartBtn.addEventListener('click', () => {
+      isRunning = !isRunning;
+      toggleBtn.textContent = isRunning ? 'Stop Bot' : 'Start Bot';
+      window.electronAPI.coldRestart();
+    });
+
+    downloadSohBtn.addEventListener('click', () => {
+      window.electronAPI.downloadSoh();
+    });
+    downloadPoBtn.addEventListener('click', () => {
+      window.electronAPI.downloadPo();
+    });
+    sendTestMessageBtn.addEventListener('click', () => {
+      window.electronAPI.sendTestMessage();
+    });
+    checkSummaryPoBtn.addEventListener('click', () => {
+      window.electronAPI.checkSummaryPo();
+    });
+
+    window.electronAPI.onLog((log) => {
+      const div = document.createElement('div');
+      div.textContent = log;
+      logContainer.appendChild(div);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    });
+  </script>
+</body>
+</html>
